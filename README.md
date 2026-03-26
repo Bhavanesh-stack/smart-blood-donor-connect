@@ -1,67 +1,67 @@
-# 🩸 Smart Blood Donor Connect
+# Smart Blood Donor Connect 🩸
 
-A real-time blood donor matching platform that connects donors with recipients using location-based matching.
+A full-stack, real-time web application prototype designed to bridge the gap between blood donors and recipients. The platform uses location-based tracking and interactive maps to help recipients find the nearest compatible blood donors quickly during emergencies.
 
-## Features
+## 🚀 Features
 
-- **Donor Registration** — Register as a blood donor with your blood group, location, and availability
-- **Recipient Search** — Search for compatible donors by blood type and proximity
-- **Interactive Map** — View nearby donors on a Leaflet.js / OpenStreetMap map
-- **Blood Requests** — Recipients can raise urgent blood requests
-- **Real-time Notifications** — Donors receive incoming requests via polling (every 10s)
-- **Accept/Reject** — Donors can accept or decline blood requests
-- **Profile Management** — Update availability, phone, city, donation history
+- **User Authentication:** Secure registration and login for Donors and Recipients using JWT (JSON Web Tokens).
+- **Role-Based Dashboards:** Unique interfaces tailored specifically for blood donors vs. recipients.
+- **Location Matching:** Real-time distance calculation (Haversine formula) to match recipients with the closest available donors.
+- **Interactive Map Visualization:** Built with **Leaflet.js**, including marker clustering and custom avatars plotted directly on the map.
+- **Blood Requests:** Recipients can search for a specific blood group by radius and instantly send requests. Donors receive live updates.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | HTML5, Tailwind CSS (CDN), Vanilla JS |
-| Backend | Node.js, Express.js |
-| Database | lowdb (JSON file-based) |
-| Maps | Leaflet.js + OpenStreetMap |
-| Auth | JWT + bcryptjs |
-| Location | Browser Geolocation API + Haversine formula |
+**Frontend:**
+- HTML5
+- Tailwind CSS (via CDN)
+- Vanilla JavaScript (ES6+)
+- Leaflet.js (Map rendering logic)
 
-## Quick Start
+**Backend:**
+- Node.js & Express.js (REST API Server)
+- lowdb (File-based JSON database for prototype)
+- bcryptjs (Password hashing)
+- jsonwebtoken (Authentication)
 
-```bash
-# Install dependencies
-npm install
+---
 
-# Start development server
-npm run dev
+## 💻 Local Setup Instructions
 
-# Or start production server
-npm start
-```
+1. **Install dependencies:**
+   \`\`\`bash
+   npm install
+   \`\`\`
 
-Open [http://localhost:5000](http://localhost:5000) in your browser.
+2. **Start the local server:**
+   \`\`\`bash
+   npm start
+   \`\`\`
+   
+   *This will run the Express backend and serve the frontend files at `http://localhost:5000`.*
 
-## Test Credentials
+---
 
-| Email | Password | Role |
-|-------|----------|------|
-| ravi@test.com | (hashed in seed) | Donor |
+## ☁️ How to push changes to GitHub
 
-> Register a new account to test the full flow.
+Now that your repository is set up, whenever you make changes to your code, you need to save those changes to GitHub. Here is the step-by-step process you will follow every time:
 
-## API Endpoints
+### Step 1: Stage the changed files
+This command tells Git to track all the files you have added, deleted, or modified.
+\`\`\`bash
+git add .
+\`\`\`
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | No | Register new user |
-| POST | `/api/auth/login` | No | Login user |
-| GET | `/api/donors/search` | No | Search donors by blood group & location |
-| GET | `/api/donors/profile` | Yes | Get donor profile |
-| PATCH | `/api/donors/availability` | Yes | Toggle availability |
-| PATCH | `/api/donors/profile` | Yes | Update donor profile |
-| POST | `/api/requests` | Yes | Create blood request |
-| GET | `/api/requests/my` | Yes | Get recipient's requests |
-| GET | `/api/requests/incoming` | Yes | Get donor's incoming requests |
-| PATCH | `/api/requests/:id/respond` | Yes | Accept/reject request |
-| PATCH | `/api/requests/:id/fulfill` | Yes | Mark request as fulfilled |
+### Step 2: Commit the changes
+This saves a local snapshot of your project. Be sure to write a descriptive message so you remember what you changed!
+\`\`\`bash
+git commit -m "Describe your changes here for example: Fixed login bug"
+\`\`\`
 
-## License
+### Step 3: Push to GitHub
+This uploads your local snapshot directly to your remote GitHub repository for the world to see.
+\`\`\`bash
+git push
+\`\`\`
 
-MIT
+*(Note: Since you've already run `git push -u origin master` once today, you now only need to type `git push` going forward!)*

@@ -1,0 +1,138 @@
+{
+  "users": [
+    {
+      "id": "donor-001",
+      "name": "Ravi Kumar",
+      "email": "ravi@test.com",
+      "passwordHash": "$2a$10$X7UrE5EqGhAu4yBRw0VBJuZNlGz3N7vI6XsYq2v9hF8uJQ0kx.Kq6",
+      "role": "donor",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "d51551ba-eba9-4fa9-9c75-7fbe6644d22c",
+      "name": "Test Recipient",
+      "email": "recipient@test.com",
+      "passwordHash": "$2a$10$6C/JCviYsZvaFOYbETNHFOLNA5CcUPeMDpexJwBN.jWWiWq85ze2K",
+      "role": "recipient",
+      "createdAt": "2026-03-26T17:41:56.978Z"
+    },
+    {
+      "id": "fbacbe6e-89aa-4825-b587-f6a62cb3c02c",
+      "name": "Test Donor",
+      "email": "donor@test.com",
+      "passwordHash": "$2a$10$YhooLf3Jna2/znOv4SKViOZY6Uf5L1VOGVLCT7m.plYW63rT3WEO6",
+      "role": "donor",
+      "createdAt": "2026-03-26T17:49:59.913Z"
+    },
+    {
+      "id": "baa79db2-03bb-45a0-8a3e-07b1965742f4",
+      "name": "john",
+      "email": "john123@gmail.com",
+      "passwordHash": "$2a$10$0FGsdwd3FWszFTEuDzRMKOUvvmBujR9xMXehXjjhZ8vDMIvIH7RR6",
+      "role": "donor",
+      "createdAt": "2026-03-26T18:16:57.373Z"
+    },
+    {
+      "id": "e39ada72-91d4-4820-abee-18a436212f5b",
+      "name": "Hari",
+      "email": "hari123@gmail.com",
+      "passwordHash": "$2a$10$.tc6TXPp.WBfllkXRcrq/uvG/UfLgOVyohxXQ/vmqSbNCPbZcJs5K",
+      "role": "recipient",
+      "createdAt": "2026-03-26T18:19:04.549Z"
+    }
+  ],
+  "donors": [
+    {
+      "id": "donor-001",
+      "name": "Ravi Kumar",
+      "email": "ravi@test.com",
+      "phone": "9876543210",
+      "bloodGroup": "O+",
+      "location": {
+        "lat": 13.0827,
+        "lng": 80.2707,
+        "city": "Chennai"
+      },
+      "available": true,
+      "lastDonated": "2025-10-01",
+      "totalDonations": 3,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fbacbe6e-89aa-4825-b587-f6a62cb3c02c",
+      "name": "Test Donor",
+      "email": "donor@test.com",
+      "phone": "9876543210",
+      "bloodGroup": "B+",
+      "location": {
+        "lat": 13.0827,
+        "lng": 80.2707,
+        "city": "Chennai"
+      },
+      "available": true,
+      "lastDonated": null,
+      "totalDonations": 0,
+      "createdAt": "2026-03-26T17:49:59.913Z"
+    },
+    {
+      "id": "baa79db2-03bb-45a0-8a3e-07b1965742f4",
+      "name": "john",
+      "email": "john123@gmail.com",
+      "phone": "",
+      "bloodGroup": "B+",
+      "location": {
+        "lat": 13.113124917510186,
+        "lng": 80.28909083597176,
+        "city": "Chennai"
+      },
+      "available": true,
+      "lastDonated": null,
+      "totalDonations": 1,
+      "createdAt": "2026-03-26T18:16:57.373Z"
+    }
+  ],
+  "requests": [
+    {
+      "id": "9bc07f7d-54c1-4fe1-83c5-50853c33b886",
+      "recipientId": "e39ada72-91d4-4820-abee-18a436212f5b",
+      "recipientName": "Hari",
+      "bloodGroup": "B+",
+      "hospital": "Apollo Hospital",
+      "location": {
+        "lat": 13.113128743879974,
+        "lng": 80.28910703738461,
+        "city": "Chennai"
+      },
+      "urgency": "normal",
+      "units": 1,
+      "status": "fulfilled",
+      "matchedDonorId": "baa79db2-03bb-45a0-8a3e-07b1965742f4",
+      "notifiedDonors": [
+        "fbacbe6e-89aa-4825-b587-f6a62cb3c02c",
+        "baa79db2-03bb-45a0-8a3e-07b1965742f4"
+      ],
+      "createdAt": "2026-03-26T18:20:10.979Z"
+    },
+    {
+      "id": "34d5697b-394b-48b7-9ff7-1171e7661bdd",
+      "recipientId": "e39ada72-91d4-4820-abee-18a436212f5b",
+      "recipientName": "Hari",
+      "bloodGroup": "B+",
+      "hospital": "Apollo Hospital",
+      "location": {
+        "lat": 13.113089298961112,
+        "lng": 80.28914397367684,
+        "city": "Chennai"
+      },
+      "urgency": "normal",
+      "units": 1,
+      "status": "pending",
+      "matchedDonorId": null,
+      "notifiedDonors": [
+        "fbacbe6e-89aa-4825-b587-f6a62cb3c02c",
+        "baa79db2-03bb-45a0-8a3e-07b1965742f4"
+      ],
+      "createdAt": "2026-03-26T19:16:52.294Z"
+    }
+  ]
+}

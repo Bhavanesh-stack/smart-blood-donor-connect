@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Recipient Dashboard — Search for blood donors, view them on a map, and raise blood requests.">
+  <title>Recipient Dashboard — Smart Blood Donor Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS + JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- MarkerCluster plugin -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Mobile Menu Button -->
+  <button id="sidebar-toggle" class="md:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-xl shadow-lg border border-gray-100">
+    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/30 z-40 md:hidden" onclick="toggleSidebar()"></div>
+
+  <div class="flex min-h-screen">
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar" class="dashboard-sidebar w-72 bg-white border-r border-gray-100 flex flex-col shadow-sm">
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div id="avatar-container"></div>
+          <div>
+            <h3 id="sidebar-name" class="font-bold text-gray-900 text-sm">Loading...</h3>
+            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Recipient</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="#search" onclick="showSection('search')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all" id="nav-search">
+          <span>🔍</span> Search Donors
+        </a>
+        <a href="#requests" onclick="showSection('requests')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all" id="nav-requests">
+          <span>📋</span> My Requests
+          <span id="request-count" class="ml-auto bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-gray-100">
+        <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 font-medium text-sm transition-all">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+      <div class="mb-8 ml-10 md:ml-0">
+        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">Recipient Dashboard</h1>
+        <p class="text-gray-500 mt-1">Search donors, view on map, and raise blood requests</p>
+      </div>
+
+      <!-- ===== SECTION: SEARCH ===== -->
+      <div id="section-search">
+        <!-- Search Bar -->
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mb-6 card-stagger">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">🔍 Find Blood Donors</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Blood Group</label>
+              <select id="search-blood-group" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-gray-50 hover:bg-white transition-all">
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Radius: <span id="radius-display">10</span>km</label>
+              <input type="range" id="search-radius" min="1" max="50" value="10" oninput="document.getElementById('radius-display').textContent = this.value">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Location</label>
+              <button onclick="captureLocation()" id="location-btn" class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-red-300 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition-all text-sm">
+                📍 Use My Location
+              </button>
+            </div>
+            <button onclick="handleSearch()" class="bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              🔍 Search
+            </button>
+          </div>
+          <div id="location-info" class="hidden mt-3 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">✅ Location captured</div>
+        </div>
+
+        <!-- Map -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6 card-stagger" style="animation-delay: 0.1s">
+          <div id="map" style="height: 420px; width: 100%; border-radius: 16px;"></div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="search-results" class="hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Donors Found</h3>
+            <span id="results-count" class="bg-red-50 text-red-600 text-sm font-bold px-3 py-1 rounded-full"></span>
+          </div>
+          <div id="donor-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Request Blood Modal -->
+        <div id="request-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRequestModal()"></div>
+          <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full relative z-10 shadow-2xl section-transition">
+            <h3 class="text-xl font-extrabold text-gray-900 mb-6">🩸 Raise Blood Request</h3>
+            <form id="request-form" class="space-y-4">
+              <input type="hidden" id="req-blood-group">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Hospital Name</label>
+                <input type="text" id="req-hospital" required placeholder="e.g. Apollo Hospital" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none bg-gray-50">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
+                <input type="text" id="req-city" required placeholder="e.g. Chennai" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none bg-gray-50">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Units Needed</label>
+                  <input type="number" id="req-units" value="1" min="1" max="10" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none bg-gray-50">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Urgency</label>
+                  <select id="req-urgency" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none bg-gray-50">
+                    <option value="normal">Normal</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="emergency">Emergency</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all shadow-md">🩸 Submit Request</button>
+                <button type="button" onclick="closeRequestModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold transition-all">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: MY REQUESTS ===== -->
+      <div id="section-requests" class="hidden">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900">My Blood Requests</h3>
+            <button onclick="loadMyRequests()" class="text-sm text-red-600 font-semibold hover:text-red-700 transition-colors">🔄 Refresh</button>
+          </div>
+          <div id="my-requests-list">
+            <div class="text-center py-12">
+              <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
+              <p class="text-gray-400 mt-4">Loading requests...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/map.js"></script>
+  <script>
+    // Auth guard
+    redirectIfNotAuth();
+    const user = getUser();
+    if (user && user.role !== 'recipient') {
+      window.location.href = '/donor-dashboard.html';
+    }
+
+    let userLat = null;
+    let userLng = null;
+    let searchResults = [];
+
+    // Setup sidebar
+    document.getElementById('sidebar-name').textContent = user?.name || 'User';
+    document.getElementById('avatar-container').innerHTML = createAvatarHTML(user?.name || 'User', 44);
+
+    // ===== SIDEBAR TOGGLE =====
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+    document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+
+    // ===== SECTION NAVIGATION =====
+    function showSection(section) {
+      document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`section-${section}`);
+      target.classList.remove('hidden');
+      animateSection(`section-${section}`);
+
+      document.querySelectorAll('.sidebar-link').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('text-gray-600', 'hover:bg-gray-50');
+      });
+      document.getElementById(`nav-${section}`).classList.add('active');
+      document.getElementById(`nav-${section}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+
+      if (section === 'requests') loadMyRequests();
+      if (sidebar.classList.contains('open')) toggleSidebar();
+    }
+
+    // ===== INIT MAP =====
+    initMap(13.0827, 80.2707);
+
+    // Try auto-locate
+    getUserLocation().then(loc => {
+      userLat = loc.lat;
+      userLng = loc.lng;
+      addUserMarker(loc.lat, loc.lng);
+      map.setView([loc.lat, loc.lng], 13);
+      const btn = document.getElementById('location-btn');
+      btn.innerHTML = '📍 Location Captured ✅';
+      btn.classList.add('border-green-400', 'text-green-600');
+      btn.classList.remove('border-red-300', 'text-red-600');
+      document.getElementById('location-info').classList.remove('hidden');
+      document.getElementById('location-info').innerHTML = `✅ ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+    }).catch(() => {});
+
+    // ===== CAPTURE LOCATION =====
+    async function captureLocation() {
+      const btn = document.getElementById('location-btn');
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> Getting...';
+      try {
+        const loc = await getUserLocation();
+        userLat = loc.lat;
+        userLng = loc.lng;
+        addUserMarker(loc.lat, loc.lng);
+        map.setView([loc.lat, loc.lng], 13);
+        btn.innerHTML = '📍 Location Captured ✅';
+        btn.classList.add('border-green-400', 'text-green-600');
+        btn.classList.remove('border-red-300', 'text-red-600');
+        document.getElementById('location-info').classList.remove('hidden');
+        document.getElementById('location-info').innerHTML = `✅ ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+      } catch (err) {
+        btn.innerHTML = '📍 Use My Location';
+        showToast('Could not get location. Please allow access.', 'error');
+      }
+    }
+
+    // ===== SEARCH DONORS =====
+    async function handleSearch() {
+      const bloodGroup = document.getElementById('search-blood-group').value;
+      const radius = document.getElementById('search-radius').value;
+
+      if (!userLat || !userLng) {
+        showToast('Please capture your location first', 'error');
+        return;
+      }
+
+      showLoading();
+      try {
+        const donors = await searchDonors({ bloodGroup, lat: userLat, lng: userLng, radius });
+        searchResults = donors;
+        clearMarkers();
+        addUserMarker(userLat, userLng);
+
+        document.getElementById('search-results').classList.remove('hidden');
+        document.getElementById('results-count').textContent = `${donors.length} found`;
+
+        const donorList = document.getElementById('donor-list');
+        if (donors.length === 0) {
+          donorList.innerHTML = `
+            <div class="col-span-full text-center py-12">
+              ${getEmptyStateSVG('no-donors')}
+              <p class="text-gray-500 font-semibold text-lg">No donors found nearby</p>
+              <p class="text-gray-400 text-sm mt-1">Try increasing the search radius or a different blood group</p>
+            </div>
+          `;
+        } else {
+          donorList.innerHTML = donors.map((d, i) => {
+            addDonorMarker(d);
+            return `
+              <div class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 card-stagger" style="animation-delay: ${i * 0.08}s">
+                <div class="flex items-center gap-3 mb-3">
+                  ${createAvatarSimple(d.name, 40)}
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-gray-900 truncate">${d.name}</h4>
+                    <p class="text-sm text-gray-500">📍 ${d.distance} km away</p>
+                  </div>
+                  ${getBloodGroupBadge(d.bloodGroup)}
+                </div>
+                <div class="flex items-center justify-between text-sm text-gray-500 mb-3 px-1">
+                  <span>🏙️ ${d.location?.city || 'Unknown'}</span>
+                  <span class="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">Available</span>
+                </div>
+                <button onclick="openRequestModal('${d.bloodGroup}')" class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm hover:shadow hover:-translate-y-0.5">🩸 Request Blood</button>
+              </div>
+            `;
+          }).join('');
+
+          fitMapToBounds(donors, userLat, userLng);
+        }
+      } catch (err) {
+        showToast('Search failed: ' + err.message, 'error');
+      }
+      hideLoading();
+    }
+
+    // ===== REQUEST MODAL =====
+    function openRequestModal(bloodGroup) {
+      document.getElementById('req-blood-group').value = bloodGroup;
+      document.getElementById('request-modal').classList.remove('hidden');
+    }
+
+    function closeRequestModal() {
+      document.getElementById('request-modal').classList.add('hidden');
+    }
+
+    window.requestBloodFromDonor = function(donorId) {
+      const donor = searchResults.find(d => d.id === donorId);
+      if (donor) openRequestModal(donor.bloodGroup);
+    };
+
+    document.getElementById('request-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          bloodGroup: document.getElementById('req-blood-group').value,
+          hospital: document.getElementById('req-hospital').value,
+          city: document.getElementById('req-city').value,
+          units: parseInt(document.getElementById('req-units').value),
+          urgency: document.getElementById('req-urgency').value,
+          lat: userLat,
+          lng: userLng
+        };
+        await createRequest(data);
+        closeRequestModal();
+        showToast('Blood request submitted! Nearby donors have been notified. 🩸', 'success');
+        document.getElementById('request-form').reset();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    // ===== MY REQUESTS =====
+    async function loadMyRequests() {
+      try {
+        const requests = await getMyRequests();
+        const container = document.getElementById('my-requests-list');
+
+        const countBadge = document.getElementById('request-count');
+        const activeCount = requests.filter(r => r.status === 'pending' || r.status === 'accepted').length;
+        if (activeCount > 0) {
+          countBadge.textContent = activeCount;
+          countBadge.classList.remove('hidden');
+        } else {
+          countBadge.classList.add('hidden');
+        }
+
+        if (!requests || requests.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-12">
+              ${getEmptyStateSVG('no-history')}
+              <p class="text-gray-500 font-semibold text-lg">No requests yet</p>
+              <p class="text-gray-400 text-sm mt-1">Search for donors and raise your first blood request</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = requests.map((r, i) => {
+          const statusClass = `status-${r.status}`;
+          const statusIcons = { pending: '⏳', accepted: '✅', fulfilled: '🎉', rejected: '❌', expired: '⏰' };
+          const ago = timeAgo(r.createdAt);
+
+          let actions = '';
+          if (r.status === 'accepted') {
+            actions = `<button onclick="handleFulfill('${r.id}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-sm hover:-translate-y-0.5">✅ Mark Fulfilled</button>`;
+          }
+
+          return `
+            <div class="border border-gray-100 rounded-xl p-5 mb-4 hover:shadow-md transition-all card-stagger" style="animation-delay: ${i * 0.08}s">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl">🏥</div>
+                  <div>
+                    <h4 class="font-bold text-gray-900">${r.hospital}</h4>
+                    <p class="text-sm text-gray-500">📍 ${r.location?.city || 'Unknown'}</p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  ${getBloodGroupBadge(r.bloodGroup)}
+                  <span class="${statusClass} px-3 py-1 rounded-full text-xs font-bold uppercase">${statusIcons[r.status] || '📋'} ${r.status}</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-gray-500">
+                <span>🩸 ${r.units} unit${r.units > 1 ? 's' : ''}</span>
+                <span>•</span>
+                <span class="urgency-${r.urgency} px-2 py-0.5 rounded-full text-xs font-bold uppercase">${r.urgency}</span>
+                <span>•</span>
+                <span>Donors notified: ${r.notifiedDonors?.length || 0}</span>
+                <span class="ml-auto text-xs time-pulse">${ago}</span>
+              </div>
+              ${actions ? `<div class="mt-4">${actions}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        showToast('Failed to load requests', 'error');
+      }
+    }
+
+    async function handleFulfill(requestId) {
+      try {
+        await fulfillRequest(requestId);
+        launchConfetti();
+        showToast('Request fulfilled! 🎉 Thank you for using Smart Blood Donor Connect!', 'success');
+        loadMyRequests();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // Load requests on init
+    loadMyRequests();
+  </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Donor Dashboard — Manage your blood donor profile, view incoming requests, and toggle your availability.">
+  <title>Donor Dashboard — Smart Blood Donor Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Mobile Menu Button -->
+  <button id="sidebar-toggle" class="md:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-xl shadow-lg border border-gray-100">
+    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/30 z-40 md:hidden" onclick="toggleSidebar()"></div>
+
+  <div class="flex min-h-screen">
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar" class="dashboard-sidebar w-72 bg-white border-r border-gray-100 flex flex-col shadow-sm">
+      <!-- Profile Card -->
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div id="avatar-container"></div>
+          <div>
+            <h3 id="sidebar-name" class="font-bold text-gray-900 text-sm">Loading...</h3>
+            <div id="sidebar-badge" class="mt-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="#dashboard" onclick="showSection('dashboard')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all" id="nav-dashboard">
+          <span>📊</span> Dashboard
+        </a>
+        <a href="#profile" onclick="showSection('profile')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all" id="nav-profile">
+          <span>👤</span> My Profile
+        </a>
+        <a href="#requests" onclick="showSection('requests')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all" id="nav-requests">
+          <span>📋</span> Requests
+          <span id="request-count" class="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+        </a>
+      </nav>
+
+      <!-- Logout -->
+      <div class="p-4 border-t border-gray-100">
+        <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 font-medium text-sm transition-all">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+      <!-- Header -->
+      <div class="mb-8 ml-10 md:ml-0">
+        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">Donor Dashboard</h1>
+        <p class="text-gray-500 mt-1">Manage your profile and respond to blood requests</p>
+      </div>
+
+      <!-- ===== SECTION: DASHBOARD ===== -->
+      <div id="section-dashboard">
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 card-stagger">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-gray-500 text-sm font-medium">Total Donations</span>
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-xl">💉</div>
+            </div>
+            <div id="stat-donations" class="text-3xl font-extrabold text-gray-900">0</div>
+            <div class="text-xs text-gray-400 mt-1">Lives impacted</div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 card-stagger">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-gray-500 text-sm font-medium">Status</span>
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-xl">🟢</div>
+            </div>
+            <div id="stat-status" class="text-lg font-bold"></div>
+            <div class="text-xs text-gray-400 mt-1">Your availability</div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 card-stagger">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-gray-500 text-sm font-medium">Blood Group</span>
+              <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-xl">🩸</div>
+            </div>
+            <div id="stat-blood-group" class="mt-1"></div>
+          </div>
+        </div>
+
+        <!-- Availability Toggle -->
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mb-8 card-stagger">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Availability</h3>
+              <p class="text-gray-500 text-sm mt-1">Toggle your donation availability status</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span id="availability-label" class="text-sm font-semibold text-gray-500">Loading...</span>
+              <div id="availability-toggle" class="toggle-switch" onclick="handleToggle()"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incoming Requests -->
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm card-stagger">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Incoming Blood Requests</h3>
+              <p class="text-gray-500 text-sm mt-1">Requests from recipients near you</p>
+            </div>
+            <div id="polling-indicator" class="flex items-center gap-2 text-xs text-gray-400">
+              <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Live
+            </div>
+          </div>
+          <div id="requests-list">
+            <div class="text-center py-12">
+              <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
+              <p class="text-gray-400 font-medium mt-4">Checking for requests...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: PROFILE ===== -->
+      <div id="section-profile" class="hidden">
+        <div class="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm max-w-2xl">
+          <h3 class="text-lg font-bold text-gray-900 mb-6">Edit Profile</h3>
+          <form id="profile-form" class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
+              <input type="tel" id="edit-phone" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-gray-50 hover:bg-white transition-all" placeholder="9876543210">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
+              <input type="text" id="edit-city" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-gray-50 hover:bg-white transition-all" placeholder="Chennai">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Last Donated Date</label>
+              <input type="date" id="edit-lastDonated" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-gray-50 hover:bg-white transition-all">
+            </div>
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+              💾 Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: REQUESTS ===== -->
+      <div id="section-requests" class="hidden">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-900 mb-6">All Incoming Requests</h3>
+          <div id="requests-list-full">
+            <div class="text-center py-12">
+              <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
+              <p class="text-gray-400 mt-4">Loading requests...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    // Auth guard
+    redirectIfNotAuth();
+    const user = getUser();
+    if (user && user.role !== 'donor') {
+      window.location.href = '/recipient-dashboard.html';
+    }
+
+    let donorProfile = null;
+    let pollingInterval = null;
+
+    // ===== SIDEBAR TOGGLE =====
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+    document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+
+    // ===== SECTION NAVIGATION =====
+    function showSection(section) {
+      document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`section-${section}`);
+      target.classList.remove('hidden');
+      animateSection(`section-${section}`);
+
+      document.querySelectorAll('.sidebar-link').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('text-gray-600', 'hover:bg-gray-50');
+      });
+      document.getElementById(`nav-${section}`).classList.add('active');
+      document.getElementById(`nav-${section}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+
+      // Close mobile sidebar
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar.classList.contains('open')) toggleSidebar();
+    }
+
+    // ===== LOAD PROFILE =====
+    async function loadProfile() {
+      try {
+        donorProfile = await getMyProfile();
+
+        // Sidebar avatar
+        document.getElementById('sidebar-name').textContent = donorProfile.name;
+        document.getElementById('avatar-container').innerHTML = createAvatarHTML(donorProfile.name, 44);
+        document.getElementById('sidebar-badge').innerHTML = getBloodGroupBadge(donorProfile.bloodGroup);
+
+        // Stats
+        document.getElementById('stat-donations').textContent = donorProfile.totalDonations || 0;
+        document.getElementById('stat-blood-group').innerHTML = `<span class="${getBloodGroupBadgeClass(donorProfile.bloodGroup)} px-4 py-2 rounded-xl text-2xl font-extrabold">${donorProfile.bloodGroup}</span>`;
+
+        updateAvailabilityUI(donorProfile.available);
+
+        // Profile form
+        document.getElementById('edit-phone').value = donorProfile.phone || '';
+        document.getElementById('edit-city').value = donorProfile.location?.city || '';
+        document.getElementById('edit-lastDonated').value = donorProfile.lastDonated || '';
+      } catch (err) {
+        showToast('Failed to load profile', 'error');
+      }
+    }
+
+    // ===== AVAILABILITY =====
+    function updateAvailabilityUI(available) {
+      const toggle = document.getElementById('availability-toggle');
+      const label = document.getElementById('availability-label');
+      const status = document.getElementById('stat-status');
+
+      if (available) {
+        toggle.classList.add('active');
+        label.textContent = "I'm Available";
+        label.classList.add('text-green-600');
+        label.classList.remove('text-gray-500');
+        status.innerHTML = '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">✅ Available</span>';
+      } else {
+        toggle.classList.remove('active');
+        label.textContent = "Unavailable";
+        label.classList.remove('text-green-600');
+        label.classList.add('text-gray-500');
+        status.innerHTML = '<span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-bold">❌ Unavailable</span>';
+      }
+    }
+
+    async function handleToggle() {
+      if (!donorProfile) return;
+      const newStatus = !donorProfile.available;
+      try {
+        const updated = await toggleAvailability(newStatus);
+        donorProfile.available = updated.available;
+        updateAvailabilityUI(updated.available);
+        showToast(`Status updated to ${updated.available ? 'Available' : 'Unavailable'}`, 'success');
+      } catch (err) {
+        showToast('Failed to update status', 'error');
+      }
+    }
+
+    // ===== INCOMING REQUESTS =====
+    async function loadIncomingRequests() {
+      try {
+        const requests = await getIncomingRequests();
+        renderRequests(requests, 'requests-list');
+        renderRequests(requests, 'requests-list-full');
+
+        const countBadge = document.getElementById('request-count');
+        if (requests.length > 0) {
+          countBadge.textContent = requests.length;
+          countBadge.classList.remove('hidden');
+        } else {
+          countBadge.classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('Error loading requests:', err);
+      }
+    }
+
+    function renderRequests(requests, containerId) {
+      const container = document.getElementById(containerId);
+      if (!requests || requests.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            ${getEmptyStateSVG('no-requests')}
+            <p class="text-gray-500 font-semibold text-lg">No pending requests</p>
+            <p class="text-gray-400 text-sm mt-1">We'll notify you when someone needs your help</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = requests.map((r, i) => {
+        const urgencyClass = r.urgency === 'emergency' ? 'urgency-emergency' : r.urgency === 'urgent' ? 'urgency-urgent' : 'urgency-normal';
+        const urgencyIcon = r.urgency === 'emergency' ? '🚨' : r.urgency === 'urgent' ? '⚠️' : '🟢';
+        const distText = r.distance !== null ? `${r.distance} km away` : '';
+        const ago = timeAgo(r.createdAt);
+
+        return `
+          <div class="border border-gray-100 rounded-xl p-5 mb-4 hover:shadow-md transition-all card-stagger" style="animation-delay: ${i * 0.08}s">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="flex items-center gap-3">
+                ${createAvatarSimple(r.recipientName, 40)}
+                <div>
+                  <h4 class="font-bold text-gray-900">${r.recipientName}</h4>
+                  <p class="text-sm text-gray-500">🏥 ${r.hospital}</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                ${getBloodGroupBadge(r.bloodGroup)}
+                <span class="${urgencyClass} px-3 py-1 rounded-full text-xs font-bold uppercase">${urgencyIcon} ${r.urgency}</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-gray-500">
+              <span>🩸 ${r.units} unit${r.units > 1 ? 's' : ''} needed</span>
+              <span>•</span>
+              <span>📍 ${r.location?.city || 'Unknown'}</span>
+              ${distText ? `<span>•</span><span>${distText}</span>` : ''}
+              <span class="ml-auto text-xs time-pulse">${ago}</span>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button onclick="handleRespond('${r.id}', 'accept')" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm hover:shadow hover:-translate-y-0.5">✅ Accept</button>
+              <button onclick="handleRespond('${r.id}', 'reject')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5">❌ Decline</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleRespond(requestId, action) {
+      try {
+        await respondToRequest(requestId, action);
+        if (action === 'accept') {
+          launchConfetti();
+          showToast('Request accepted! 🎉 Thank you for saving a life!', 'success');
+        } else {
+          showToast('Request declined.', 'info');
+        }
+        loadIncomingRequests();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // ===== PROFILE FORM =====
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          phone: document.getElementById('edit-phone').value,
+          city: document.getElementById('edit-city').value,
+          lastDonated: document.getElementById('edit-lastDonated').value || null
+        };
+        await updateProfile(data);
+        showToast('Profile updated successfully!', 'success');
+        loadProfile();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    // ===== INIT =====
+    loadProfile();
+    loadIncomingRequests();
+
+    // Polling every 10 seconds
+    pollingInterval = setInterval(() => {
+      loadIncomingRequests();
+    }, 10000);
+  </script>
+</body>
+</html>

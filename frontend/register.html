@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register as a blood donor or recipient on Smart Blood Donor Connect.">
+  <title>Register — Smart Blood Donor Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 flex items-center justify-center p-4 font-sans">
+
+  <!-- Background -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-10 right-20 w-72 h-72 bg-red-100 rounded-full filter blur-3xl opacity-40"></div>
+    <div class="absolute bottom-10 left-10 w-96 h-96 bg-rose-100 rounded-full filter blur-3xl opacity-30"></div>
+  </div>
+
+  <div class="w-full max-w-lg relative z-10 fade-in-up my-8">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-2">
+        <span class="text-4xl">🩸</span>
+        <span class="text-xl font-bold text-gray-900">Smart Blood Donor <span class="text-red-600">Connect</span></span>
+      </a>
+    </div>
+
+    <!-- Register Card -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Create Account</h1>
+        <p class="text-gray-500">Join our blood donor community</p>
+      </div>
+
+      <form id="register-form" class="space-y-5">
+        <!-- Full Name -->
+        <div>
+          <label for="name" class="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+          <div class="relative">
+            <span class="absolute left-3 top-3 text-gray-400">👤</span>
+            <input type="text" id="name" name="name" required placeholder="John Doe"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all bg-gray-50 hover:bg-white">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+          <div class="relative">
+            <span class="absolute left-3 top-3 text-gray-400">📧</span>
+            <input type="email" id="email" name="email" required placeholder="you@example.com"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all bg-gray-50 hover:bg-white">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+          <div class="relative">
+            <span class="absolute left-3 top-3 text-gray-400">🔒</span>
+            <input type="password" id="password" name="password" required placeholder="Min 8 characters" minlength="8"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all bg-gray-50 hover:bg-white">
+          </div>
+        </div>
+
+        <!-- Role Toggle -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">I want to</label>
+          <div class="pill-selector flex rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+            <button type="button" id="role-donor" class="flex-1 py-3 text-center font-semibold transition-all active text-sm" onclick="selectRole('donor')">
+              🩸 Donate Blood
+            </button>
+            <button type="button" id="role-recipient" class="flex-1 py-3 text-center font-semibold transition-all text-gray-500 text-sm" onclick="selectRole('recipient')">
+              🏥 Receive Blood
+            </button>
+          </div>
+        </div>
+
+        <!-- Donor Fields (conditional) -->
+        <div id="donor-fields" class="space-y-5 transition-all">
+          <!-- Blood Group -->
+          <div>
+            <label for="bloodGroup" class="block text-sm font-semibold text-gray-700 mb-1.5">Blood Group</label>
+            <select id="bloodGroup" name="bloodGroup"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-gray-50 hover:bg-white transition-all">
+              <option value="">Select blood group</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+
+
+
+          <!-- City -->
+          <div>
+            <label for="city" class="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-gray-400">🏙️</span>
+              <input type="text" id="city" name="city" placeholder="Chennai"
+                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all bg-gray-50 hover:bg-white">
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Location</label>
+            <button type="button" id="location-btn" onclick="getLocation()"
+              class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-red-300 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition-all">
+              📍 Use My Location
+            </button>
+            <div id="location-info" class="hidden mt-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+              ✅ Location captured
+            </div>
+            <input type="hidden" id="lat" name="lat">
+            <input type="hidden" id="lng" name="lng">
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-msg" class="hidden bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-100"></div>
+
+        <!-- Submit -->
+        <button type="submit" id="register-btn"
+          class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-xl font-bold text-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
+          <span id="register-text">Create Account</span>
+          <div id="register-spinner" class="spinner hidden" style="width:20px;height:20px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></div>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-500 text-sm">
+          Already have an account? 
+          <a href="/login.html" class="text-red-600 hover:text-red-700 font-semibold hover:underline">Login</a>
+        </p>
+      </div>
+    </div>
+
+    <p class="text-center text-gray-400 text-xs mt-6">&copy; 2026 Smart Blood Donor Connect</p>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    redirectIfAuth();
+
+    let selectedRole = 'donor';
+
+    // Check URL params for pre-selected role
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('role') === 'recipient') {
+      selectRole('recipient');
+    }
+
+    function selectRole(role) {
+      selectedRole = role;
+      const donorBtn = document.getElementById('role-donor');
+      const recipientBtn = document.getElementById('role-recipient');
+      const donorFields = document.getElementById('donor-fields');
+
+      if (role === 'donor') {
+        donorBtn.classList.add('active');
+        donorBtn.classList.remove('text-gray-500');
+        recipientBtn.classList.remove('active');
+        recipientBtn.classList.add('text-gray-500');
+        donorFields.style.display = 'block';
+      } else {
+        recipientBtn.classList.add('active');
+        recipientBtn.classList.remove('text-gray-500');
+        donorBtn.classList.remove('active');
+        donorBtn.classList.add('text-gray-500');
+        donorFields.style.display = 'none';
+      }
+    }
+
+    async function getLocation() {
+      const btn = document.getElementById('location-btn');
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> Getting location...';
+      try {
+        const loc = await getUserLocation();
+        document.getElementById('lat').value = loc.lat;
+        document.getElementById('lng').value = loc.lng;
+        document.getElementById('location-info').classList.remove('hidden');
+        document.getElementById('location-info').innerHTML = `✅ Location: ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+        btn.innerHTML = '📍 Location Captured ✅';
+        btn.classList.add('border-green-400', 'text-green-600');
+        btn.classList.remove('border-red-300', 'text-red-600');
+      } catch (err) {
+        btn.innerHTML = '📍 Use My Location';
+        showToast('Could not get location. Please allow location access.', 'error');
+      }
+    }
+
+    const form = document.getElementById('register-form');
+    const errorMsg = document.getElementById('error-msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      const data = { name, email, password, role: selectedRole };
+
+      if (selectedRole === 'donor') {
+        data.bloodGroup = document.getElementById('bloodGroup').value;
+
+        data.city = document.getElementById('city').value.trim();
+        data.lat = document.getElementById('lat').value || '0';
+        data.lng = document.getElementById('lng').value || '0';
+
+        if (!data.bloodGroup) {
+          errorMsg.textContent = 'Please select a blood group.';
+          errorMsg.classList.remove('hidden');
+          return;
+        }
+
+      }
+
+      const btn = document.getElementById('register-btn');
+      const btnText = document.getElementById('register-text');
+      const spinner = document.getElementById('register-spinner');
+
+      btn.disabled = true;
+      btnText.textContent = 'Creating account...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const result = await registerUser(data);
+        saveAuth(result.token, result.user);
+        showToast('Account created! Redirecting...', 'success');
+        setTimeout(() => redirectByRole(), 800);
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.classList.remove('hidden');
+        btn.disabled = false;
+        btnText.textContent = 'Create Account';
+        spinner.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
